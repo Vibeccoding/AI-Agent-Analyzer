@@ -70,12 +70,9 @@ HTML_TEMPLATE = '''
             <label>Repository Path:</label><br>
             <input type="text" name="path" id="folderPath" placeholder="Enter folder path or use sample: sample_documents" value="sample_documents"><br><br>
             <button type="submit" class="primary">Analyze</button>
+            <button type="button" onclick="downloadExcel()" class="danger">Get Risk Report</button>
+            <button type="button" onclick="downloadMitigation()" class="info">Mitigation Plan</button>
         </form>
-        
-        <div class="button-group">
-            <button onclick="downloadExcel()" class="danger">Get Risk Report</button>
-            <button onclick="downloadMitigation()" class="info">Mitigation Plan</button>
-        </div>
     </div>
     
     <script>
