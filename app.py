@@ -81,8 +81,13 @@ HTML_TEMPLATE = '''
     <script>
         document.getElementById('folderSelect').addEventListener('change', function(e) {
             if (e.target.files.length > 0) {
-                const path = e.target.files[0].webkitRelativePath.split('/')[0];
-                document.getElementById('folderPath').value = './' + path;
+                const file = e.target.files[0];
+                const fullPath = file.webkitRelativePath;
+                const folderName = fullPath.split('/')[0];
+                // Get the actual file path and extract directory
+                const actualPath = file.path || file.webkitRelativePath;
+                const parentDir = actualPath.substring(0, actualPath.lastIndexOf('\\' + folderName));
+                document.getElementById('folderPath').value = parentDir + '\\' + folderName;
             }
         });
         
@@ -93,13 +98,6 @@ HTML_TEMPLATE = '''
         function downloadSummary() {
             window.location.href = '/download-summary';
         }
-        
-        document.getElementById('folderSelect').addEventListener('change', function(e) {
-            if (e.target.files.length > 0) {
-                const path = e.target.files[0].webkitRelativePath.split('/')[0];
-                document.getElementById('folderPath').value = './' + path;
-            }
-        });
     </script>
         
         <div style="margin-top:10px; font-size:12px; color:#666;">
