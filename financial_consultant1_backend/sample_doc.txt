@@ -1,0 +1,15 @@
+Financial Consultant Backend Documentation
+
+This system handles critical financial data processing with potential security risks.
+
+Key Features:
+- Client portfolio management
+- Risk assessment algorithms
+- Compliance monitoring with audit requirements
+
+Warning: Unauthorized access to financial data could result in regulatory violations.
+
+Security Concerns:
+- Database contains sensitive client information
+- API endpoints may have vulnerability to data breach
+- Critical backup failure could cause data loss

@@ -1,0 +1,6 @@
+@echo off
+echo Installing requirements...
+pip install -r requirements.txt
+echo Starting AI Agent Analyzer...
+python app.py
+pause

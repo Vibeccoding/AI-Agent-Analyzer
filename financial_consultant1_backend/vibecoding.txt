@@ -1,0 +1,39 @@
+Prompts 
+
+1. create a Transition framework Dashboard for Knowledge acquisition from incumbent vendor to track the transition progress including assessment , due diligence, Shadow and reverse shadow along with KPI/SLA. Apply CRUD operations.
+
+2.Include various phases in the transition framework such as discover,plan,learn,observe,perform,Own.
+
+3.Keyactivites should include planning , learn,Resource rampup,tools implementation and integration
+
+
+https://vibecoding.github.io/Transition_Framework
+
+https://vibeccoding.github.io/Transition_Framework
+
+
+
+Define roles, workflows, KPIs -Microsoft Copilot
+
+
+
+Asset mapping, risk analysis - ServiceNow/Dynatrace
+
+
+
+Knowledge capture & validation - Confluence/ Otter.ai
+
+https://vibeccoding.github.io/Transition_Framework/
+
+
+Execution & monitoring -
+
+
+Infra & security hardening - Darktrace/ Defender
+
+
+
+Training & comms - Canva
+
+
+Audit & optimization- notion
