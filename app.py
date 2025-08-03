@@ -197,82 +197,62 @@ def api_analyze():
 @app.route('/download-excel')
 def download_excel():
     if 'logged_in' not in session or 'last_results' not in session:
-        return redirect(url_for('login'))
+        return jsonify({'error': 'No analysis data available'}), 400
     
-    results = session['last_results']
-    
-    risks = results['risk_items']['all_risks']
-    
-    # Create DataFrame
-    df = pd.DataFrame(risks)
-    
-    # Add metadata
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f'risk_analysis_{timestamp}.xlsx'
-    filepath = os.path.join(os.getcwd(), filename)
-    
-    # Write to Excel
-    with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
-        df.to_excel(writer, sheet_name='Risk Analysis', index=False)
+    try:
+        results = session['last_results']
+        risks = results['risk_items']['all_risks']
         
-        # Add summary sheet
-        summary_data = {
-            'Metric': ['Total Documents', 'Total Risks', 'High Severity', 'Medium Severity', 'Low Severity'],
-            'Count': [
-                results['total_documents'],
-                results['risk_items']['total_risks'],
-                len(results['risk_items']['high_severity']),
-                len(results['risk_items']['medium_severity']),
-                len(results['risk_items']['low_severity'])
-            ]
-        }
-        summary_df = pd.DataFrame(summary_data)
-        summary_df.to_excel(writer, sheet_name='Summary', index=False)
-    
-    return send_file(filepath, as_attachment=True, download_name=filename)
+        # Create simple CSV instead of Excel for serverless
+        import io
+        output = io.StringIO()
+        output.write('File,Line,Keyword,Context,Severity\n')
+        
+        for risk in risks:
+            output.write(f"{risk['file']},{risk['line']},{risk['keyword']},\"{risk['context']}\",{risk['severity']}\n")
+        
+        # Create response
+        from flask import Response
+        return Response(
+            output.getvalue(),
+            mimetype='text/csv',
+            headers={'Content-Disposition': f'attachment; filename=risk_analysis_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'}
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/download-mitigation')
 def download_mitigation():
     if 'logged_in' not in session or 'last_results' not in session:
-        return redirect(url_for('login'))
+        return jsonify({'error': 'No analysis data available'}), 400
     
-    results = session['last_results']
-    risks = results['risk_items']['all_risks']
-    
-    # Create PDF
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f'mitigation_plan_{timestamp}.pdf'
-    filepath = os.path.join(os.getcwd(), filename)
-    
-    doc = SimpleDocTemplate(filepath, pagesize=letter)
-    styles = getSampleStyleSheet()
-    story = []
-    
-    # Title
-    title = Paragraph("Risk Mitigation Plan", styles['Title'])
-    story.append(title)
-    story.append(Spacer(1, 12))
-    
-    # Repository info
-    repo_info = Paragraph(f"Repository: {results['repository_path']}", styles['Normal'])
-    story.append(repo_info)
-    story.append(Spacer(1, 12))
-    
-    # Mitigation strategies for each risk
-    for risk in risks:
-        risk_para = Paragraph(f"<b>Risk:</b> {risk['keyword']} in {risk['file']} (Line {risk['line']})", styles['Normal'])
-        story.append(risk_para)
-        context_para = Paragraph(f"<b>Context:</b> {risk['context']}", styles['Normal'])
-        story.append(context_para)
+    try:
+        results = session['last_results']
+        risks = results['risk_items']['all_risks']
         
-        # Generate mitigation based on risk type
-        mitigation = generate_mitigation(risk['keyword'])
-        mitigation_para = Paragraph(f"<b>Mitigation:</b> {mitigation}", styles['Normal'])
-        story.append(mitigation_para)
-        story.append(Spacer(1, 12))
-    
-    doc.build(story)
-    return send_file(filepath, as_attachment=True, download_name=filename)
+        # Create text-based mitigation plan
+        import io
+        output = io.StringIO()
+        output.write('RISK MITIGATION PLAN\n')
+        output.write('=' * 50 + '\n\n')
+        output.write(f'Repository: {results["repository_path"]}\n\n')
+        
+        for risk in risks:
+            output.write(f'RISK: {risk["keyword"]} in {risk["file"]} (Line {risk["line"]})\n')
+            output.write(f'Context: {risk["context"]}\n')
+            mitigation = generate_mitigation(risk['keyword'])
+            output.write(f'Mitigation: {mitigation}\n')
+            output.write('-' * 50 + '\n\n')
+        
+        # Create response
+        from flask import Response
+        return Response(
+            output.getvalue(),
+            mimetype='text/plain',
+            headers={'Content-Disposition': f'attachment; filename=mitigation_plan_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'}
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 def generate_mitigation(keyword):
     mitigations = {
