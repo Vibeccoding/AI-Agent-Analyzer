@@ -90,11 +90,15 @@ HTML_TEMPLATE = '''
                 
                 const file = e.target.files[0];
                 const fullPath = file.webkitRelativePath;
-                const folderName = fullPath.split('/')[0];
+                const pathParts = fullPath.split('/');
+                const folderName = pathParts[0];
+                
+                // Use current working directory + folder name
+                const dynamicPath = './' + folderName;
                 
                 // Simulate upload progress
                 setTimeout(function() {
-                    document.getElementById('folderPath').value = folderName;
+                    document.getElementById('folderPath').value = dynamicPath;
                     document.getElementById('uploadProgress').style.display = 'none';
                     document.getElementById('uploadSuccess').style.display = 'block';
                     setTimeout(function() {
