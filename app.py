@@ -70,7 +70,7 @@ HTML_TEMPLATE = '''
             <label>Repository Path:</label><br>
             <input type="text" name="path" id="folderPath" placeholder="Enter folder path" value="sample_documents" style="width:400px;">
             <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
-            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Select Folder</button><br><br>
+            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Source Path</button><br><br>
             <div id="progressContainer" style="display:none; margin:10px 0; text-align:center;">
                 <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #f3f3f3; border-top:3px solid #007cba; border-radius:50%; animation:spin 1s linear infinite;"></div>
                 <span style="margin-left:10px; color:#007cba;">Uploading folder...</span>
@@ -221,6 +221,64 @@ def api_analyze():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/mitigation', methods=['POST'])
+def api_mitigation():
+    """REST API endpoint to get mitigation plan"""
+    # API authentication check
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or auth_header != 'Bearer admin:password':
+        return jsonify({'error': 'Authentication required'}), 401
+    
+    data = request.json
+    path = data.get('path', '').strip()
+    
+    if not path:
+        return jsonify({'error': 'Path is required'}), 400
+    
+    # Handle relative paths from current working directory
+    if not os.path.isabs(path):
+        path = os.path.join(os.getcwd(), path)
+    path = os.path.abspath(path)
+    
+    if not os.path.exists(path):
+        # Try fallback to sample_documents
+        fallback_path = os.path.join(os.getcwd(), 'sample_documents')
+        if os.path.exists(fallback_path):
+            path = fallback_path
+        else:
+            return jsonify({'error': f'Path does not exist: {path}. Use sample_documents.'}), 400
+    
+    if not os.path.isdir(path):
+        return jsonify({'error': f'Path is not a directory: {path}'}), 400
+    
+    try:
+        agent = AIAgentAnalyzer(path)
+        results = agent.analyze_repository()
+        risks = results['risk_items']['all_risks']
+        
+        # Generate mitigation plan
+        mitigation_plan = []
+        for risk in risks:
+            mitigation = generate_mitigation(risk['keyword'])
+            mitigation_plan.append({
+                'risk': {
+                    'file': risk['file'],
+                    'line': risk['line'],
+                    'keyword': risk['keyword'],
+                    'context': risk['context'],
+                    'severity': risk['severity']
+                },
+                'mitigation': mitigation
+            })
+        
+        return jsonify({
+            'repository_path': path,
+            'total_risks': len(risks),
+            'mitigation_plan': mitigation_plan
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/download-excel')
 def download_excel():
     if 'logged_in' not in session or 'last_results' not in session:
@@ -294,6 +352,37 @@ def generate_mitigation(keyword):
         'warning': 'Investigate warning conditions and implement preventive measures'
     }
     return mitigations.get(keyword, 'Review and assess the identified issue for appropriate remediation')
+
+@app.route('/api/docs')
+def api_docs():
+    """API Documentation"""
+    docs = {
+        'title': 'AI Agent Analyzer API',
+        'version': '1.0',
+        'endpoints': {
+            '/api/analyze': {
+                'method': 'POST',
+                'description': 'Analyze documents and get risk assessment',
+                'headers': {'Authorization': 'Bearer admin:password'},
+                'body': {'path': 'string - folder path to analyze'},
+                'response': 'Complete analysis results with risks and summaries'
+            },
+            '/api/mitigation': {
+                'method': 'POST', 
+                'description': 'Get mitigation plan for identified risks',
+                'headers': {'Authorization': 'Bearer admin:password'},
+                'body': {'path': 'string - folder path to analyze'},
+                'response': 'Mitigation strategies for each identified risk'
+            }
+        },
+        'example_request': {
+            'url': '/api/mitigation',
+            'method': 'POST',
+            'headers': {'Authorization': 'Bearer admin:password'},
+            'body': {'path': 'sample_documents'}
+        }
+    }
+    return jsonify(docs)
 
 if __name__ == '__main__':
     import os
