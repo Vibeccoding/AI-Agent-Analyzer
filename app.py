@@ -68,7 +68,11 @@ HTML_TEMPLATE = '''
     <div class="container">
         <form method="POST" action="/analyze">
             <label>Repository Path:</label><br>
-            <input type="text" name="path" id="folderPath" placeholder="Enter folder path or use sample: sample_documents" value="sample_documents"><br><br>
+            <select id="sourceSelect" onchange="updatePath()" style="padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:4px;">
+                <option value="sample_documents">Sample Documents</option>
+                <option value="custom">Custom Path</option>
+            </select><br>
+            <input type="text" name="path" id="folderPath" placeholder="Enter folder path" value="sample_documents" style="width:400px;"><br><br>
             <button type="submit" class="primary">Analyze</button>
             <button type="button" onclick="downloadExcel()" class="danger">Get Risk Report</button>
             <button type="button" onclick="downloadMitigation()" class="info">Mitigation Plan</button>
@@ -76,7 +80,22 @@ HTML_TEMPLATE = '''
     </div>
     
     <script>
-        // Folder browser not available in serverless environment
+        function updatePath() {
+            const select = document.getElementById('sourceSelect');
+            const pathInput = document.getElementById('folderPath');
+            
+            if (select.value === 'sample_documents') {
+                pathInput.value = 'sample_documents';
+                pathInput.readOnly = true;
+            } else {
+                pathInput.value = '';
+                pathInput.readOnly = false;
+                pathInput.placeholder = 'Enter custom folder path';
+            }
+        }
+        
+        // Initialize on page load
+        updatePath();
         
         function downloadExcel() {
             window.location.href = '/download-excel';
