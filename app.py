@@ -84,10 +84,7 @@ HTML_TEMPLATE = '''
                 const file = e.target.files[0];
                 const fullPath = file.webkitRelativePath;
                 const folderName = fullPath.split('/')[0];
-                // Get the actual file path and extract directory
-                const actualPath = file.path || file.webkitRelativePath;
-                const parentDir = actualPath.substring(0, actualPath.lastIndexOf('\\' + folderName));
-                document.getElementById('folderPath').value = parentDir + '\\' + folderName;
+                document.getElementById('folderPath').value = 'C:\\Users\\207295\\Downloads\\' + folderName;
             }
         });
         
