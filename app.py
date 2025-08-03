@@ -168,8 +168,9 @@ def analyze():
     if not path:
         return render_template_string(HTML_TEMPLATE, results="Error: Please enter a folder path")
     
-    # Expand user path and resolve relative paths
-    path = os.path.expanduser(path)
+    # Handle relative paths from current working directory
+    if not os.path.isabs(path):
+        path = os.path.join(os.getcwd(), path)
     path = os.path.abspath(path)
     
     if not os.path.exists(path):
@@ -202,8 +203,9 @@ def api_analyze():
     if not path:
         return jsonify({'error': 'Path is required'}), 400
     
-    # Expand and validate path
-    path = os.path.expanduser(path)
+    # Handle relative paths from current working directory
+    if not os.path.isabs(path):
+        path = os.path.join(os.getcwd(), path)
     path = os.path.abspath(path)
     
     if not os.path.exists(path):
