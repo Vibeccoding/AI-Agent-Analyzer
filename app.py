@@ -70,15 +70,15 @@ HTML_TEMPLATE = '''
             <label>Repository Path:</label><br>
             <input type="text" name="path" id="folderPath" placeholder="Enter folder path (e.g., C:\\Documents or ./my-folder)">
             <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
-            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Browse Folder</button>
+            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Source Path</button>
             <div id="uploadProgress" style="display:none; color:#007cba; margin:10px 0;">📁 Uploading folder... <span class="spinner">⏳</span></div>
             <div id="uploadSuccess" style="display:none; color:#28a745; margin:10px 0;">✅ Folder selected successfully!</div><br><br>
-            <button type="submit" class="primary">Analyze Documents</button>
+            <button type="submit" class="primary">Analyze</button>
         </form>
         
         <div class="button-group">
-            <button onclick="downloadExcel()" class="danger">Download Risk Report</button>
-            <button onclick="downloadSummary()" class="info">Summarize Documents</button>
+            <button onclick="downloadExcel()" class="danger">Get Risk Report</button>
+            <button onclick="downloadMitigation()" class="info">Mitigation Plan</button>
         </div>
     </div>
     
@@ -108,8 +108,8 @@ HTML_TEMPLATE = '''
             window.location.href = '/download-excel';
         }
         
-        function downloadSummary() {
-            window.location.href = '/download-summary';
+        function downloadMitigation() {
+            window.location.href = '/download-mitigation';
         }
     </script>
         
@@ -252,17 +252,17 @@ def download_excel():
     
     return send_file(filepath, as_attachment=True, download_name=filename)
 
-@app.route('/download-summary')
-def download_summary():
+@app.route('/download-mitigation')
+def download_mitigation():
     if 'logged_in' not in session or 'last_results' not in session:
         return redirect(url_for('login'))
     
     results = session['last_results']
-    summaries = results['document_summaries']
+    risks = results['risk_items']['all_risks']
     
     # Create PDF
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f'document_summary_{timestamp}.pdf'
+    filename = f'mitigation_plan_{timestamp}.pdf'
     filepath = os.path.join(os.getcwd(), filename)
     
     doc = SimpleDocTemplate(filepath, pagesize=letter)
@@ -270,27 +270,44 @@ def download_summary():
     story = []
     
     # Title
-    title = Paragraph("Document Summary Report", styles['Title'])
+    title = Paragraph("Risk Mitigation Plan", styles['Title'])
     story.append(title)
     story.append(Spacer(1, 12))
     
     # Repository info
     repo_info = Paragraph(f"Repository: {results['repository_path']}", styles['Normal'])
     story.append(repo_info)
-    total_docs = Paragraph(f"Total Documents: {results['total_documents']}", styles['Normal'])
-    story.append(total_docs)
     story.append(Spacer(1, 12))
     
-    # Document summaries
-    for summary in summaries:
-        file_para = Paragraph(f"<b>File:</b> {summary['file']}", styles['Normal'])
-        story.append(file_para)
-        summary_para = Paragraph(f"<b>Summary:</b> {summary['summary']}", styles['Normal'])
-        story.append(summary_para)
+    # Mitigation strategies for each risk
+    for risk in risks:
+        risk_para = Paragraph(f"<b>Risk:</b> {risk['keyword']} in {risk['file']} (Line {risk['line']})", styles['Normal'])
+        story.append(risk_para)
+        context_para = Paragraph(f"<b>Context:</b> {risk['context']}", styles['Normal'])
+        story.append(context_para)
+        
+        # Generate mitigation based on risk type
+        mitigation = generate_mitigation(risk['keyword'])
+        mitigation_para = Paragraph(f"<b>Mitigation:</b> {mitigation}", styles['Normal'])
+        story.append(mitigation_para)
         story.append(Spacer(1, 12))
     
     doc.build(story)
     return send_file(filepath, as_attachment=True, download_name=filename)
+
+def generate_mitigation(keyword):
+    mitigations = {
+        'password': 'Implement strong password policies and multi-factor authentication',
+        'security': 'Conduct security audit and implement recommended security measures',
+        'vulnerability': 'Apply security patches and conduct penetration testing',
+        'risk': 'Perform risk assessment and implement risk management controls',
+        'critical': 'Implement immediate containment measures and escalation procedures',
+        'unauthorized': 'Implement access controls and authentication mechanisms',
+        'threat': 'Deploy threat detection systems and incident response procedures',
+        'compliance': 'Review compliance requirements and implement necessary controls',
+        'warning': 'Investigate warning conditions and implement preventive measures'
+    }
+    return mitigations.get(keyword, 'Review and assess the identified issue for appropriate remediation')
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
