@@ -1,0 +1,13 @@
+{
+  "name": "AI Agent Analyzer",
+  "description": "Document analysis tool with risk detection and mitigation planning",
+  "repository": "https://github.com/Vibeccoding/AI-Agent-Analyzer",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["python", "flask", "document-analysis", "risk-assessment"],
+  "env": {
+    "FLASK_ENV": {
+      "description": "Flask environment",
+      "value": "production"
+    }
+  }
+}
