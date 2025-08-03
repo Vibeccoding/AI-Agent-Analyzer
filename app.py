@@ -55,6 +55,8 @@ HTML_TEMPLATE = '''
         .browse { background: #6c757d; color: white; }
         pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; border: 1px solid #e9ecef; }
         .button-group { margin-top: 15px; }
+        .spinner { animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -67,8 +69,10 @@ HTML_TEMPLATE = '''
         <form method="POST" action="/analyze">
             <label>Repository Path:</label><br>
             <input type="text" name="path" id="folderPath" placeholder="Enter folder path (e.g., C:\\Documents or ./my-folder)">
-            <input type="file" id="folderSelect" webkitdirectory style="display:none;">
-            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Browse Folder</button><br><br>
+            <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
+            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Browse Folder</button>
+            <div id="uploadProgress" style="display:none; color:#007cba; margin:10px 0;">📁 Uploading folder... <span class="spinner">⏳</span></div>
+            <div id="uploadSuccess" style="display:none; color:#28a745; margin:10px 0;">✅ Folder selected successfully!</div><br><br>
             <button type="submit" class="primary">Analyze Documents</button>
         </form>
         
@@ -81,10 +85,22 @@ HTML_TEMPLATE = '''
     <script>
         document.getElementById('folderSelect').addEventListener('change', function(e) {
             if (e.target.files.length > 0) {
+                // Show progress
+                document.getElementById('uploadProgress').style.display = 'block';
+                
                 const file = e.target.files[0];
                 const fullPath = file.webkitRelativePath;
                 const folderName = fullPath.split('/')[0];
-                document.getElementById('folderPath').value = 'C:\\Users\\207295\\Downloads\\' + folderName;
+                
+                // Simulate upload progress
+                setTimeout(function() {
+                    document.getElementById('folderPath').value = folderName;
+                    document.getElementById('uploadProgress').style.display = 'none';
+                    document.getElementById('uploadSuccess').style.display = 'block';
+                    setTimeout(function() {
+                        document.getElementById('uploadSuccess').style.display = 'none';
+                    }, 2000);
+                }, 1000);
             }
         });
         
