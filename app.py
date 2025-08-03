@@ -68,11 +68,7 @@ HTML_TEMPLATE = '''
     <div class="container">
         <form method="POST" action="/analyze">
             <label>Repository Path:</label><br>
-            <input type="text" name="path" id="folderPath" placeholder="Enter folder path (e.g., C:\\Documents or ./my-folder)">
-            <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
-            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Source Path</button>
-            <div id="uploadProgress" style="display:none; color:#007cba; margin:10px 0;">📁 Uploading folder... <span class="spinner">⏳</span></div>
-            <div id="uploadSuccess" style="display:none; color:#28a745; margin:10px 0;">✅ Folder selected successfully!</div><br><br>
+            <input type="text" name="path" id="folderPath" placeholder="Enter folder path or use sample: sample_documents" value="sample_documents"><br><br>
             <button type="submit" class="primary">Analyze</button>
         </form>
         
@@ -83,30 +79,7 @@ HTML_TEMPLATE = '''
     </div>
     
     <script>
-        document.getElementById('folderSelect').addEventListener('change', function(e) {
-            if (e.target.files.length > 0) {
-                // Show progress
-                document.getElementById('uploadProgress').style.display = 'block';
-                
-                const file = e.target.files[0];
-                const fullPath = file.webkitRelativePath;
-                const pathParts = fullPath.split('/');
-                const folderName = pathParts[0];
-                
-                // Use current working directory + folder name
-                const dynamicPath = './' + folderName;
-                
-                // Simulate upload progress
-                setTimeout(function() {
-                    document.getElementById('folderPath').value = dynamicPath;
-                    document.getElementById('uploadProgress').style.display = 'none';
-                    document.getElementById('uploadSuccess').style.display = 'block';
-                    setTimeout(function() {
-                        document.getElementById('uploadSuccess').style.display = 'none';
-                    }, 2000);
-                }, 1000);
-            }
-        });
+        // Folder browser not available in serverless environment
         
         function downloadExcel() {
             window.location.href = '/download-excel';

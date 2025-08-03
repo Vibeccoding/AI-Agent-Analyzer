@@ -1,0 +1,12 @@
+Security Documentation
+
+This document contains critical security information.
+
+Warning: Unauthorized access to this system poses significant security risks.
+
+The system has the following vulnerabilities:
+- Password authentication is weak
+- Database contains sensitive user data
+- API endpoints lack proper security validation
+
+Compliance requirements must be met to avoid regulatory violations.
