@@ -71,11 +71,9 @@ HTML_TEMPLATE = '''
             <input type="text" name="path" id="folderPath" placeholder="Enter folder path" value="sample_documents" style="width:400px;">
             <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
             <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Select Folder</button><br><br>
-            <div id="progressContainer" style="display:none; margin:10px 0;">
-                <div style="background:#f0f0f0; border-radius:10px; overflow:hidden;">
-                    <div id="progressBar" style="width:0%; height:20px; background:#007cba; transition:width 0.3s;"></div>
-                </div>
-                <div id="progressText" style="text-align:center; margin-top:5px;">0%</div>
+            <div id="progressContainer" style="display:none; margin:10px 0; text-align:center;">
+                <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #f3f3f3; border-top:3px solid #007cba; border-radius:50%; animation:spin 1s linear infinite;"></div>
+                <span style="margin-left:10px; color:#007cba;">Uploading folder...</span>
             </div>
             <button type="submit" class="primary">Analyze</button>
             <button type="button" onclick="downloadExcel()" class="danger">Get Risk Report</button>
@@ -92,21 +90,11 @@ HTML_TEMPLATE = '''
                 const file = e.target.files[0];
                 const folderName = file.webkitRelativePath.split('/')[0];
                 
-                // Simulate upload progress
-                let progress = 0;
-                const interval = setInterval(function() {
-                    progress += 10;
-                    document.getElementById('progressBar').style.width = progress + '%';
-                    document.getElementById('progressText').textContent = progress + '%';
-                    
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        document.getElementById('folderPath').value = folderName;
-                        setTimeout(function() {
-                            document.getElementById('progressContainer').style.display = 'none';
-                        }, 1000);
-                    }
-                }, 100);
+                // Simulate upload with spinner
+                setTimeout(function() {
+                    document.getElementById('folderPath').value = folderName;
+                    document.getElementById('progressContainer').style.display = 'none';
+                }, 1500);
             }
         });
         
