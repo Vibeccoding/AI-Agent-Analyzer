@@ -101,6 +101,8 @@ HTML_TEMPLATE = '''
         
         function downloadExcel() {
             window.location.href = '/download-excel';
+            // Enable mitigation plan after risk report is downloaded
+            document.getElementById('mitigationBtn').disabled = false;
         }
         
         function downloadMitigation() {
@@ -117,9 +119,9 @@ HTML_TEMPLATE = '''
             <h2>Analysis Results</h2>
             <pre>{{ results }}</pre>
             <script>
-                // Enable download buttons after analysis
+                // Enable only risk report button after analysis
                 document.getElementById('riskBtn').disabled = false;
-                document.getElementById('mitigationBtn').disabled = false;
+                // Mitigation plan remains disabled until risk report is downloaded
             </script>
         </div>
         {% endif %}
