@@ -164,7 +164,12 @@ def analyze():
     path = os.path.abspath(path)
     
     if not os.path.exists(path):
-        return render_template_string(HTML_TEMPLATE, results=f"Error: Path '{path}' does not exist")
+        # If path doesn't exist, try to use sample_documents as fallback
+        fallback_path = os.path.join(os.getcwd(), 'sample_documents')
+        if os.path.exists(fallback_path):
+            path = fallback_path
+        else:
+            return render_template_string(HTML_TEMPLATE, results=f"Error: Path '{path}' does not exist. Please use 'sample_documents' or upload files.")
     
     if not os.path.isdir(path):
         return render_template_string(HTML_TEMPLATE, results=f"Error: '{path}' is not a directory")
@@ -199,7 +204,12 @@ def api_analyze():
     path = os.path.abspath(path)
     
     if not os.path.exists(path):
-        return jsonify({'error': f'Path does not exist: {path}'}), 400
+        # Try fallback to sample_documents
+        fallback_path = os.path.join(os.getcwd(), 'sample_documents')
+        if os.path.exists(fallback_path):
+            path = fallback_path
+        else:
+            return jsonify({'error': f'Path does not exist: {path}. Use sample_documents.'}), 400
     
     if not os.path.isdir(path):
         return jsonify({'error': f'Path is not a directory: {path}'}), 400
