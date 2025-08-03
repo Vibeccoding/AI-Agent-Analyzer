@@ -68,15 +68,15 @@ HTML_TEMPLATE = '''
     <div class="container">
         <form method="POST" action="/analyze">
             <label>Repository Path:</label><br>
-            <select id="sourceSelect" onchange="updatePath()" style="padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:4px;">
-                <option value="sample_documents">Sample Documents</option>
-                <option value="upload">Upload Files</option>
-            </select><br>
-            <div id="uploadArea" style="display:none; border:2px dashed #ccc; padding:20px; margin:10px 0; text-align:center;">
-                <input type="file" id="fileUpload" multiple accept=".txt,.md,.py,.js,.json,.xml,.csv" style="margin:10px;">
-                <p>Upload text files for analysis</p>
+            <input type="text" name="path" id="folderPath" placeholder="Enter folder path" value="sample_documents" style="width:400px;">
+            <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
+            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Select Folder</button><br><br>
+            <div id="progressContainer" style="display:none; margin:10px 0;">
+                <div style="background:#f0f0f0; border-radius:10px; overflow:hidden;">
+                    <div id="progressBar" style="width:0%; height:20px; background:#007cba; transition:width 0.3s;"></div>
+                </div>
+                <div id="progressText" style="text-align:center; margin-top:5px;">0%</div>
             </div>
-            <input type="text" name="path" id="folderPath" placeholder="Enter folder path" value="sample_documents" style="width:400px;"><br><br>
             <button type="submit" class="primary">Analyze</button>
             <button type="button" onclick="downloadExcel()" class="danger">Get Risk Report</button>
             <button type="button" onclick="downloadMitigation()" class="info">Mitigation Plan</button>
@@ -84,24 +84,31 @@ HTML_TEMPLATE = '''
     </div>
     
     <script>
-        function updatePath() {
-            const select = document.getElementById('sourceSelect');
-            const pathInput = document.getElementById('folderPath');
-            const uploadArea = document.getElementById('uploadArea');
-            
-            if (select.value === 'sample_documents') {
-                pathInput.value = 'sample_documents';
-                pathInput.readOnly = true;
-                uploadArea.style.display = 'none';
-            } else {
-                pathInput.value = 'uploaded_files';
-                pathInput.readOnly = true;
-                uploadArea.style.display = 'block';
+        document.getElementById('folderSelect').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                // Show progress
+                document.getElementById('progressContainer').style.display = 'block';
+                
+                const file = e.target.files[0];
+                const folderName = file.webkitRelativePath.split('/')[0];
+                
+                // Simulate upload progress
+                let progress = 0;
+                const interval = setInterval(function() {
+                    progress += 10;
+                    document.getElementById('progressBar').style.width = progress + '%';
+                    document.getElementById('progressText').textContent = progress + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        document.getElementById('folderPath').value = folderName;
+                        setTimeout(function() {
+                            document.getElementById('progressContainer').style.display = 'none';
+                        }, 1000);
+                    }
+                }, 100);
             }
-        }
-        
-        // Initialize on page load
-        updatePath();
+        });
         
         function downloadExcel() {
             window.location.href = '/download-excel';
