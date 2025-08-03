@@ -52,6 +52,7 @@ HTML_TEMPLATE = '''
         .primary { background: #007cba; color: white; }
         .danger { background: #dc3545; color: white; }
         .info { background: #17a2b8; color: white; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
         .browse { background: #6c757d; color: white; }
         pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; border: 1px solid #e9ecef; }
         .button-group { margin-top: 15px; }
@@ -70,14 +71,14 @@ HTML_TEMPLATE = '''
             <label>Repository Path:</label><br>
             <input type="text" name="path" id="folderPath" placeholder="Enter folder path" value="sample_documents" style="width:400px;">
             <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
-            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Source Path</button><br><br>
+            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Source</button><br><br>
             <div id="progressContainer" style="display:none; margin:10px 0; text-align:center;">
                 <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #f3f3f3; border-top:3px solid #007cba; border-radius:50%; animation:spin 1s linear infinite;"></div>
                 <span style="margin-left:10px; color:#007cba;">Uploading folder...</span>
             </div>
             <button type="submit" class="primary">Analyze</button>
-            <button type="button" onclick="downloadExcel()" class="danger">Get Risk Report</button>
-            <button type="button" onclick="downloadMitigation()" class="info">Mitigation Plan</button>
+            <button type="button" onclick="downloadExcel()" class="danger" id="riskBtn" disabled>Get Risk Report</button>
+            <button type="button" onclick="downloadMitigation()" class="info" id="mitigationBtn" disabled>Mitigation Plan</button>
         </form>
     </div>
     
@@ -115,6 +116,11 @@ HTML_TEMPLATE = '''
         <div style="margin-top: 20px;">
             <h2>Analysis Results</h2>
             <pre>{{ results }}</pre>
+            <script>
+                // Enable download buttons after analysis
+                document.getElementById('riskBtn').disabled = false;
+                document.getElementById('mitigationBtn').disabled = false;
+            </script>
         </div>
         {% endif %}
     </div>
