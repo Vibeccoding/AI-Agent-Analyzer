@@ -70,8 +70,12 @@ HTML_TEMPLATE = '''
             <label>Repository Path:</label><br>
             <select id="sourceSelect" onchange="updatePath()" style="padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:4px;">
                 <option value="sample_documents">Sample Documents</option>
-                <option value="custom">Custom Path</option>
+                <option value="upload">Upload Files</option>
             </select><br>
+            <div id="uploadArea" style="display:none; border:2px dashed #ccc; padding:20px; margin:10px 0; text-align:center;">
+                <input type="file" id="fileUpload" multiple accept=".txt,.md,.py,.js,.json,.xml,.csv" style="margin:10px;">
+                <p>Upload text files for analysis</p>
+            </div>
             <input type="text" name="path" id="folderPath" placeholder="Enter folder path" value="sample_documents" style="width:400px;"><br><br>
             <button type="submit" class="primary">Analyze</button>
             <button type="button" onclick="downloadExcel()" class="danger">Get Risk Report</button>
@@ -83,14 +87,16 @@ HTML_TEMPLATE = '''
         function updatePath() {
             const select = document.getElementById('sourceSelect');
             const pathInput = document.getElementById('folderPath');
+            const uploadArea = document.getElementById('uploadArea');
             
             if (select.value === 'sample_documents') {
                 pathInput.value = 'sample_documents';
                 pathInput.readOnly = true;
+                uploadArea.style.display = 'none';
             } else {
-                pathInput.value = '';
-                pathInput.readOnly = false;
-                pathInput.placeholder = 'Enter custom folder path';
+                pathInput.value = 'uploaded_files';
+                pathInput.readOnly = true;
+                uploadArea.style.display = 'block';
             }
         }
         
