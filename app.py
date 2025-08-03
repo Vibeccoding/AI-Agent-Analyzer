@@ -43,20 +43,40 @@ HTML_TEMPLATE = '''
 <html>
 <head>
     <title>AI Agent Analyzer</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; background: #f5f5f5; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        input[type="text"] { width: 400px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; }
+        button { padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; font-weight: bold; }
+        .primary { background: #007cba; color: white; }
+        .danger { background: #dc3545; color: white; }
+        .info { background: #17a2b8; color: white; }
+        .browse { background: #6c757d; color: white; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; border: 1px solid #e9ecef; }
+        .button-group { margin-top: 15px; }
+    </style>
 </head>
 <body>
-    <h1>AI Agent Analyzer</h1>
-    <a href="/logout">Logout</a>
+    <div class="header">
+        <h1>AI Agent Analyzer</h1>
+        <a href="/logout"><button class="danger">Logout</button></a>
+    </div>
     
-    <form method="POST" action="/analyze">
-        <label>Repository Path:</label><br>
-        <input type="text" name="path" placeholder="Enter folder path">
-        <button type="submit">Analyze Documents</button>
-    </form>
-    
-    <h2>Download Options:</h2>
-    <button onclick="downloadExcel()" style="background:red; color:white; padding:10px; margin:10px;">Download Risk Report</button>
-    <button onclick="downloadSummary()" style="background:blue; color:white; padding:10px; margin:10px;">Summarize Documents</button>
+    <div class="container">
+        <form method="POST" action="/analyze">
+            <label>Repository Path:</label><br>
+            <input type="text" name="path" id="folderPath" placeholder="Enter folder path (e.g., C:\\Documents or ./my-folder)">
+            <input type="file" id="folderSelect" webkitdirectory style="display:none;">
+            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Browse Folder</button><br><br>
+            <button type="submit" class="primary">Analyze Documents</button>
+        </form>
+        
+        <div class="button-group">
+            <button onclick="downloadExcel()" class="danger">Download Risk Report</button>
+            <button onclick="downloadSummary()" class="info">Summarize Documents</button>
+        </div>
+    </div>
     
     <script>
         document.getElementById('folderSelect').addEventListener('change', function(e) {
@@ -74,30 +94,25 @@ HTML_TEMPLATE = '''
             window.location.href = '/download-summary';
         }
         
-        // Show download buttons if results exist
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                if (document.querySelector('pre')) {
-                    document.getElementById('downloadBtn').style.display = 'inline-block';
-                    document.getElementById('summaryBtn').style.display = 'inline-block';
-                }
-            }, 100);
+        document.getElementById('folderSelect').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const path = e.target.files[0].webkitRelativePath.split('/')[0];
+                document.getElementById('folderPath').value = './' + path;
+            }
         });
-        
-        // Also check after form submission
-        if (document.querySelector('pre')) {
-            document.getElementById('downloadBtn').style.display = 'inline-block';
-            document.getElementById('summaryBtn').style.display = 'inline-block';
-        }
     </script>
-    <div style="margin-top:10px; font-size:12px; color:#666;">
-        Examples: C:\\Users\\Documents, ./project-docs, /home/user/files
+        
+        <div style="margin-top:10px; font-size:12px; color:#666;">
+            Examples: C:\\Users\\Documents, ./project-docs, /home/user/files
+        </div>
+        
+        {% if results %}
+        <div style="margin-top: 20px;">
+            <h2>Analysis Results</h2>
+            <pre>{{ results }}</pre>
+        </div>
+        {% endif %}
     </div>
-    {% if results %}
-    <hr>
-    <h2>Analysis Results</h2>
-    <pre>{{ results }}</pre>
-    {% endif %}
 </body>
 </html>
 '''
