@@ -84,6 +84,29 @@ HTML_TEMPLATE = '''
         .severity-medium { color: #ffc107; font-weight: bold; }
         .severity-low { color: #28a745; font-weight: bold; }
         .analyze-form { max-width: 600px; margin: 0 auto; }
+        .analysis-modern { margin: 20px 0; }
+        .analysis-section { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #007cba; }
+        .analysis-section h4 { color: #007cba; margin: 0 0 15px 0; font-size: 1.2em; }
+        .icon { margin-right: 8px; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+        .info-item { background: white; padding: 10px; border-radius: 4px; border: 1px solid #e9ecef; }
+        .risk-chart { margin: 15px 0; }
+        .risk-bar { height: 30px; background: #e9ecef; border-radius: 15px; overflow: hidden; display: flex; }
+        .risk-segment { height: 100%; transition: width 0.3s ease; }
+        .risk-segment.high { background: #dc3545; }
+        .risk-segment.medium { background: #ffc107; }
+        .risk-segment.low { background: #28a745; }
+        .risk-legend { display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 2px; }
+        .legend-color.high { background: #dc3545; }
+        .legend-color.medium { background: #ffc107; }
+        .legend-color.low { background: #28a745; }
+        .keyword-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+        .keyword-tag { padding: 6px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold; color: white; }
+        .keyword-tag.severity-high { background: #dc3545; }
+        .keyword-tag.severity-medium { background: #ffc107; color: #333; }
+        .keyword-tag.severity-low { background: #28a745; }
     </style>
 </head>
 <body>
@@ -223,9 +246,43 @@ HTML_TEMPLATE = '''
             </div>
             <!-- Analysis Details Tab -->
             <div class="tab-content" id="detailsContent">
-                <h3>Complete Analysis Report</h3>
-                {% if dashboard_data.full_report %}
-                <pre>{{ dashboard_data.full_report }}</pre>
+                <h3>Analysis Overview</h3>
+                {% if dashboard_data %}
+                <div class="analysis-modern">
+                    <div class="analysis-section">
+                        <h4><i class="icon">📊</i> Repository Information</h4>
+                        <div class="info-grid">
+                            <div class="info-item"><strong>Path:</strong> {{ dashboard_data.repository_path }}</div>
+                            <div class="info-item"><strong>Documents:</strong> {{ dashboard_data.total_documents }}</div>
+                            <div class="info-item"><strong>Total Risks:</strong> {{ dashboard_data.total_risks }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4><i class="icon">⚠️</i> Risk Distribution</h4>
+                        <div class="risk-chart">
+                            <div class="risk-bar">
+                                <div class="risk-segment high" style="width:{{ (dashboard_data.high_risks / dashboard_data.total_risks * 100) if dashboard_data.total_risks > 0 else 0 }}%"></div>
+                                <div class="risk-segment medium" style="width:{{ (dashboard_data.medium_risks / dashboard_data.total_risks * 100) if dashboard_data.total_risks > 0 else 0 }}%"></div>
+                                <div class="risk-segment low" style="width:{{ (dashboard_data.low_risks / dashboard_data.total_risks * 100) if dashboard_data.total_risks > 0 else 0 }}%"></div>
+                            </div>
+                            <div class="risk-legend">
+                                <span class="legend-item"><span class="legend-color high"></span>High ({{ dashboard_data.high_risks }})</span>
+                                <span class="legend-item"><span class="legend-color medium"></span>Medium ({{ dashboard_data.medium_risks }})</span>
+                                <span class="legend-item"><span class="legend-color low"></span>Low ({{ dashboard_data.low_risks }})</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4><i class="icon">🔍</i> Risk Keywords Found</h4>
+                        <div class="keyword-cloud">
+                            {% for risk in dashboard_data.all_risks %}
+                            <span class="keyword-tag severity-{{ risk.severity.lower() }}">{{ risk.keyword }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
                 {% else %}
                 <div style="color:#888; font-size:1em; margin:20px 0;">No analysis details available. Please run analysis.</div>
                 {% endif %}
