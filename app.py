@@ -83,6 +83,7 @@ HTML_TEMPLATE = '''
         .severity-high { color: #dc3545; font-weight: bold; }
         .severity-medium { color: #ffc107; font-weight: bold; }
         .severity-low { color: #28a745; font-weight: bold; }
+        .analyze-form { max-width: 600px; margin: 0 auto; }
     </style>
 </head>
 <body>
@@ -92,155 +93,128 @@ HTML_TEMPLATE = '''
     </div>
     
     <div class="container">
-        <form method="POST" action="/analyze">
-            <label>Repository Path:</label><br>
-            <input type="text" name="path" id="folderPath" placeholder="Enter folder path" value="sample_documents" style="width:400px;">
-            <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
-            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Source</button><br><br>
+        <form method="POST" action="/analyze" class="analyze-form">
+            <div style="margin-bottom:18px;">
+                <label for="folderPath" style="font-weight:bold; font-size:1.1em; color:#007cba;">Repository Path</label><br>
+                <input type="text" name="path" id="folderPath" placeholder="Enter folder path (e.g. sample_documents)" value="sample_documents" style="width:100%; max-width:500px; padding:12px; border:1.5px solid #007cba; border-radius:6px; font-size:1em; margin-top:8px;">
+                <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
+                <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()" style="margin-top:10px;">Browse Source Folder</button>
+            </div>
             <div id="progressContainer" style="display:none; margin:10px 0; text-align:center;">
                 <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #f3f3f3; border-top:3px solid #007cba; border-radius:50%; animation:spin 1s linear infinite;"></div>
                 <span style="margin-left:10px; color:#007cba;">Uploading folder...</span>
             </div>
-            <button type="submit" class="primary">Analyze</button>
-            <button type="button" onclick="downloadExcel()" class="danger" id="riskBtn" disabled>Get Risk Report</button>
-            <button type="button" onclick="downloadMitigation()" class="info" id="mitigationBtn" disabled>Mitigation Plan</button>
+            <button type="submit" class="primary" style="width:100%; max-width:220px; font-size:1.1em; margin-top:10px;">Analyze</button>
         </form>
+        <div style="margin-top:14px; font-size:13px; color:#666;">
+            <b>Examples:</b> C:\\Users\\Documents, ./project-docs, /home/user/files
+        </div>
     </div>
-    
     <script>
         document.getElementById('folderSelect').addEventListener('change', function(e) {
             if (e.target.files.length > 0) {
-                // Show progress
                 document.getElementById('progressContainer').style.display = 'block';
-                
                 const file = e.target.files[0];
                 const folderName = file.webkitRelativePath.split('/')[0];
-                
-                // Simulate upload with spinner
                 setTimeout(function() {
                     document.getElementById('folderPath').value = folderName;
                     document.getElementById('progressContainer').style.display = 'none';
                 }, 1500);
             }
         });
-        
-        function downloadExcel() {
-            window.location.href = '/download-excel';
-            // Enable mitigation plan after risk report is downloaded
-            document.getElementById('mitigationBtn').disabled = false;
-        }
-        
-        function downloadMitigation() {
-            window.location.href = '/download-mitigation';
-        }
-        
-        function switchTab(tabName) {
-            // Hide all tab contents
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
-            
-            // Remove active class from all tabs
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // Show selected tab content and mark tab as active
-            document.getElementById(tabName + 'Tab').classList.add('active');
-            document.getElementById(tabName + 'Content').classList.add('active');
-        }
     </script>
-        
-        <div style="margin-top:10px; font-size:12px; color:#666;">
-            Examples: C:\\Users\\Documents, ./project-docs, /home/user/files
+    
+    <div style="margin-top:10px; font-size:12px; color:#666;">
+        Examples: C:\\Users\\Documents, ./project-docs, /home/user/files
+    </div>
+    
+    {% if dashboard_data %}
+    <div class="dashboard">
+        <!-- Risk Summary Stats -->
+        <div class="dashboard-card dashboard-single">
+            <h2>Risk Analysis Dashboard</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ dashboard_data.total_documents }}</div>
+                    <div class="stat-label">Documents Analyzed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ dashboard_data.total_risks }}</div>
+                    <div class="stat-label">Total Risks Found</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ dashboard_data.high_risks }}</div>
+                    <div class="stat-label">High Severity</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ dashboard_data.medium_risks }}</div>
+                    <div class="stat-label">Medium Severity</div>
+                </div>
+            </div>
         </div>
         
-        {% if dashboard_data %}
-        <div class="dashboard">
-            <!-- Risk Summary Stats -->
-            <div class="dashboard-card dashboard-single">
-                <h2>Risk Analysis Dashboard</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number">{{ dashboard_data.total_documents }}</div>
-                        <div class="stat-label">Documents Analyzed</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">{{ dashboard_data.total_risks }}</div>
-                        <div class="stat-label">Total Risks Found</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">{{ dashboard_data.high_risks }}</div>
-                        <div class="stat-label">High Severity</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">{{ dashboard_data.medium_risks }}</div>
-                        <div class="stat-label">Medium Severity</div>
-                    </div>
-                </div>
+        <!-- Tabbed Interface -->
+        <div class="dashboard-card dashboard-single">
+            <div class="tabs">
+                <div class="tab active" id="summaryTab" onclick="switchTab('summary')">Risk Summary</div>
+                <div class="tab" id="mitigationTab" onclick="switchTab('mitigation')">Mitigation Plan</div>
+                <div class="tab" id="detailsTab" onclick="switchTab('details')">Analysis Details</div>
             </div>
             
-            <!-- Tabbed Interface -->
-            <div class="dashboard-card dashboard-single">
-                <div class="tabs">
-                    <div class="tab active" id="summaryTab" onclick="switchTab('summary')">Risk Summary</div>
-                    <div class="tab" id="mitigationTab" onclick="switchTab('mitigation')">Mitigation Plan</div>
-                    <div class="tab" id="detailsTab" onclick="switchTab('details')">Analysis Details</div>
-                </div>
-                
-                <!-- Risk Summary Tab -->
-                <div class="tab-content active" id="summaryContent">
-                    <h3>Risk Items by Severity</h3>
-                    {% for risk in dashboard_data.all_risks %}
-                    <div class="risk-item risk-{{ risk.severity.lower() }}">
-                        <div class="risk-header">
-                            <span class="severity-{{ risk.severity.lower() }}">[{{ risk.severity }}]</span>
-                            <b>{{ risk.keyword }}</b> in <b>{{ risk.file }}</b> (Line {{ risk.line }})
-                        </div>
-                        <div class="risk-context"><b>Description:</b> {{ risk.context }}</div>
-                        <div class="risk-context"><b>Severity:</b> {{ risk.severity }}</div>
-                        <div class="risk-context"><b>Detected At:</b> {{ risk.file }}:{{ risk.line }}</div>
+            <!-- Risk Summary Tab -->
+            <div class="tab-content active" id="summaryContent">
+                <h3>Risk Items by Severity</h3>
+                {% for risk in dashboard_data.all_risks %}
+                <div class="risk-item risk-{{ risk.severity.lower() }}">
+                    <div class="risk-header">
+                        <span class="severity-{{ risk.severity.lower() }}">[{{ risk.severity }}]</span>
+                        <b>{{ risk.keyword }}</b> in <b>{{ risk.file }}</b> (Line {{ risk.line }})
                     </div>
-                    {% endfor %}
+                    <div class="risk-context"><b>Description:</b> {{ risk.context }}</div>
+                    <div class="risk-context"><b>Severity:</b> {{ risk.severity }}</div>
+                    <div class="risk-context"><b>Detected At:</b> {{ risk.file }}:{{ risk.line }}</div>
                 </div>
-                
-                <!-- Mitigation Plan Tab -->
-                <div class="tab-content" id="mitigationContent">
-                    <h3>Recommended Mitigation Strategies</h3>
-                    {% for risk in dashboard_data.all_risks %}
-                    <div class="mitigation-item">
-                        <div class="mitigation-header">
-                            <b>Risk:</b> {{ risk.keyword }} in <b>{{ risk.file }}</b> (Line {{ risk.line }})
-                        </div>
-                        <div class="mitigation-text">
-                            <b>Severity:</b> {{ risk.severity }}<br>
-                            <b>Description:</b> {{ risk.context }}<br>
-                            <b>Mitigation:</b> {{ dashboard_data.mitigations[risk.keyword] }}<br>
-                            <b>Suggestions:</b>
-                            <ul>
-                            {% set suggestions = dashboard_data.suggestions.get(risk.keyword, []) %}
-                            {% for suggestion in suggestions %}
-                                <li>{{ suggestion }}</li>
-                            {% endfor %}
-                            </ul>
-                        </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Mitigation Plan Tab -->
+            <div class="tab-content" id="mitigationContent">
+                <h3>Recommended Mitigation Strategies</h3>
+                {% for risk in dashboard_data.all_risks %}
+                <div class="mitigation-item">
+                    <div class="mitigation-header">
+                        <b>Risk:</b> {{ risk.keyword }} in <b>{{ risk.file }}</b> (Line {{ risk.line }})
                     </div>
-                    {% endfor %}
+                    <div class="mitigation-text">
+                        <b>Severity:</b> {{ risk.severity }}<br>
+                        <b>Description:</b> {{ risk.context }}<br>
+                        <b>Mitigation:</b> {{ dashboard_data.mitigations[risk.keyword] }}<br>
+                        <b>Suggestions:</b>
+                        <ul>
+                        {% set suggestions = dashboard_data.suggestions.get(risk.keyword, []) %}
+                        {% for suggestion in suggestions %}
+                            <li>{{ suggestion }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
                 </div>
-                
-                <!-- Analysis Details Tab -->
-                <div class="tab-content" id="detailsContent">
-                    <h3>Complete Analysis Report</h3>
-                    <pre>{{ dashboard_data.full_report }}</pre>
-                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Analysis Details Tab -->
+            <div class="tab-content" id="detailsContent">
+                <h3>Complete Analysis Report</h3>
+                <pre>{{ dashboard_data.full_report }}</pre>
             </div>
         </div>
-        
-        <script>
-            // Enable buttons after analysis
-            document.getElementById('riskBtn').disabled = false;
-            document.getElementById('mitigationBtn').disabled = false;
-        </script>
-        {% endif %}
     </div>
+    
+    <script>
+        // Enable buttons after analysis
+        document.getElementById('riskBtn').disabled = false;
+        document.getElementById('mitigationBtn').disabled = false;
+    </script>
+    {% endif %}
 </body>
 </html>
 '''
