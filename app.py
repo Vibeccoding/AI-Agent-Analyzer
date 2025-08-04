@@ -119,8 +119,26 @@ HTML_TEMPLATE = '''
                 }, 1500);
             }
         });
-        function downloadExcel() {}
-        function downloadMitigation() {}
+        function downloadExcel() {
+            window.location.href = '/download-excel';
+        }
+        function downloadMitigation() {
+            window.location.href = '/download-mitigation';
+        }
+        
+        function switchTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content and mark tab as active
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            document.getElementById(tabName + 'Content').classList.add('active');
+        }
     </script>
     
     <div style="margin-top:10px; font-size:12px; color:#666;">
@@ -188,10 +206,10 @@ HTML_TEMPLATE = '''
                     <div class="mitigation-text">
                         <b>Severity:</b> {{ risk.severity }}<br>
                         <b>Description:</b> {{ risk.context }}<br>
-                        <b>Mitigation:</b> {{ dashboard_data.mitigations[risk.keyword] }}<br>
+                        <b>Mitigation:</b> {{ dashboard_data.mitigations.get(risk.keyword.lower(), 'No mitigation available') }}<br>
                         <b>Suggestions:</b>
                         <ul>
-                        {% set suggestions = dashboard_data.suggestions.get(risk.keyword, []) %}
+                        {% set suggestions = dashboard_data.suggestions.get(risk.keyword.lower(), []) %}
                         {% for suggestion in suggestions %}
                             <li>{{ suggestion }}</li>
                         {% endfor %}
@@ -216,9 +234,9 @@ HTML_TEMPLATE = '''
     </div>
     
     <script>
-        // Enable buttons after analysis
+        // Enable only risk report button after analysis
         document.getElementById('riskBtn').disabled = false;
-        document.getElementById('mitigationBtn').disabled = false;
+        // Mitigation plan remains disabled until risk report is downloaded
     </script>
     {% endif %}
 </body>
@@ -441,7 +459,7 @@ def analyze():
         mitigations = {}
         suggestions = {}
         for risk in all_risks:
-            keyword = risk['keyword']
+            keyword = risk['keyword'].lower()
             if keyword not in mitigations:
                 mitigations[keyword] = generate_mitigation(keyword)
                 suggestions[keyword] = generate_mitigation_suggestions(keyword)
