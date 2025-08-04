@@ -93,22 +93,19 @@ HTML_TEMPLATE = '''
     </div>
     
     <div class="container">
-        <form method="POST" action="/analyze" class="analyze-form">
-            <div style="margin-bottom:18px;">
-                <label for="folderPath" style="font-weight:bold; font-size:1.1em; color:#007cba;">Repository Path</label><br>
-                <input type="text" name="path" id="folderPath" placeholder="Enter folder path (e.g. sample_documents)" value="sample_documents" style="width:100%; max-width:500px; padding:12px; border:1.5px solid #007cba; border-radius:6px; font-size:1em; margin-top:8px;">
-                <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
-                <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()" style="margin-top:10px;">Browse Source Folder</button>
-            </div>
+        <form method="POST" action="/analyze">
+            <label>Repository Path:</label><br>
+            <input type="text" name="path" id="folderPath" placeholder="Enter folder path" value="sample_documents" style="width:400px;">
+            <input type="file" id="folderSelect" webkitdirectory multiple style="display:none;">
+            <button type="button" class="browse" onclick="document.getElementById('folderSelect').click()">Source</button><br><br>
             <div id="progressContainer" style="display:none; margin:10px 0; text-align:center;">
                 <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #f3f3f3; border-top:3px solid #007cba; border-radius:50%; animation:spin 1s linear infinite;"></div>
                 <span style="margin-left:10px; color:#007cba;">Uploading folder...</span>
             </div>
-            <button type="submit" class="primary" style="width:100%; max-width:220px; font-size:1.1em; margin-top:10px;">Analyze</button>
+            <button type="submit" class="primary">Analyze</button>
+            <button type="button" onclick="downloadExcel()" class="danger" id="riskBtn" style="display:none;" disabled>Get Risk Report</button>
+            <button type="button" onclick="downloadMitigation()" class="info" id="mitigationBtn" style="display:none;" disabled>Mitigation Plan</button>
         </form>
-        <div style="margin-top:14px; font-size:13px; color:#666;">
-            <b>Examples:</b> C:\\Users\\Documents, ./project-docs, /home/user/files
-        </div>
     </div>
     <script>
         document.getElementById('folderSelect').addEventListener('change', function(e) {
@@ -122,6 +119,8 @@ HTML_TEMPLATE = '''
                 }, 1500);
             }
         });
+        function downloadExcel() {}
+        function downloadMitigation() {}
     </script>
     
     <div style="margin-top:10px; font-size:12px; color:#666;">
@@ -180,6 +179,7 @@ HTML_TEMPLATE = '''
             <!-- Mitigation Plan Tab -->
             <div class="tab-content" id="mitigationContent">
                 <h3>Recommended Mitigation Strategies</h3>
+                {% if dashboard_data.all_risks and dashboard_data.mitigations %}
                 {% for risk in dashboard_data.all_risks %}
                 <div class="mitigation-item">
                     <div class="mitigation-header">
@@ -199,12 +199,18 @@ HTML_TEMPLATE = '''
                     </div>
                 </div>
                 {% endfor %}
+                {% else %}
+                <div style="color:#888; font-size:1em; margin:20px 0;">No mitigation data available. Please run analysis.</div>
+                {% endif %}
             </div>
-            
             <!-- Analysis Details Tab -->
             <div class="tab-content" id="detailsContent">
                 <h3>Complete Analysis Report</h3>
+                {% if dashboard_data.full_report %}
                 <pre>{{ dashboard_data.full_report }}</pre>
+                {% else %}
+                <div style="color:#888; font-size:1em; margin:20px 0;">No analysis details available. Please run analysis.</div>
+                {% endif %}
             </div>
         </div>
     </div>
