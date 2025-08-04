@@ -11,7 +11,10 @@ class AIAgentAnalyzer:
         self.risk_keywords = [
             'risk', 'threat', 'vulnerability', 'security', 'breach', 'failure', 'error',
             'critical', 'urgent', 'warning', 'danger', 'issue', 'problem', 'concern',
-            'compliance', 'audit', 'violation', 'unauthorized', 'malicious', 'attack'
+            'compliance', 'audit', 'violation', 'unauthorized', 'malicious', 'attack',
+            'deprecated', 'legacy', 'outdated', 'insecure', 'exposed', 'leak', 'injection',
+            'overflow', 'denial', 'privilege', 'escalation', 'backdoor', 'trojan', 'virus',
+            'phishing', 'ransomware', 'data loss', 'corruption', 'downtime', 'outage'
         ]
     
     def recursive_search(self) -> List[Path]:
